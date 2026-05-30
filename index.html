@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ANCHOR NET // OPERATIVE GRID</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         @keyframes radar-pulse {
             0% { transform: scale(0.95); opacity: 0.5; }
@@ -23,7 +24,6 @@
 </head>
 <body class="bg-zinc-950 text-cyan-500 min-h-screen flex flex-col justify-between p-4 font-mono select-none crt-scanlines relative">
 
-    <!-- 🚫 BAN SYSTEM OVERLAY -->
     <div id="ban-screen" class="fixed inset-0 bg-black z-50 hidden flex flex-col items-center justify-center p-6 text-center space-y-6">
         <div class="w-20 h-20 border border-red-900 bg-red-950/20 rounded-full flex items-center justify-center animate-pulse shadow-[0_0_25px_rgba(239,68,68,0.4)]">
             <span class="text-red-500 text-3xl font-black">⚠️</span>
@@ -34,7 +34,6 @@
         </div>
     </div>
 
-    <!-- 👁️ MASTER DEVELOPER SURVEILLANCE OVERLAY -->
     <div id="dev-screen" class="fixed inset-0 bg-zinc-950 z-40 hidden flex flex-col p-4 overflow-y-auto border-4 border-purple-900/50">
         <div class="flex justify-between items-center border-b border-purple-900 pb-3 mb-4">
             <div class="flex items-center gap-2">
@@ -54,7 +53,7 @@
             </div>
         </div>
         <div class="space-y-2">
-            <span class="text-[10px] text-purple-400 font-black tracking-wider uppercase block">• GLOBAL ACTIVE ANCHOR MAP DATA</span>
+            <span class="text-[10px] text-purple-400 font-black tracking-wider uppercase block">• GLOBAL ACTIVE ANCHOR MAP DATA (LIVE DATABASE)</span>
             <div class="bg-zinc-900/50 border border-zinc-800 rounded-xl overflow-x-auto">
                 <table class="w-full text-[11px] text-left border-collapse font-sans">
                     <thead>
@@ -71,7 +70,6 @@
         </div>
     </div>
 
-    <!-- MAIN INTERFACE HEADER -->
     <header class="w-full max-w-md mx-auto flex justify-between items-center border-b border-zinc-900 pb-3 z-10">
         <div class="flex items-center gap-2">
             <span class="h-2 w-2 rounded-full bg-cyan-500 animate-ping"></span>
@@ -87,16 +85,14 @@
         </div>
     </header>
 
-    <!-- CENTRAL MONITOR CORE -->
     <main class="flex-grow flex flex-col justify-center items-center w-full max-w-md mx-auto my-4 z-10 relative">
 
-        <!-- AD NETWORK PLAYER NODE SCREEN -->
         <div id="screen-ad-player" class="w-full hidden bg-zinc-900/80 border-2 border-emerald-800 rounded-2xl p-6 text-center space-y-4">
             <span class="text-[10px] text-emerald-400 font-black tracking-[0.3em] uppercase block">📺 CHARGING INTERNAL CAPACITORS</span>
             <div class="w-full h-32 bg-black rounded-xl flex flex-col items-center justify-center p-4 border border-zinc-800">
                 <span class="text-xs text-zinc-500 font-sans mb-2">[LOADING REWARDED NET VIDEO SPONSOR]</span>
                 <div class="w-2/3 bg-zinc-900 h-2 rounded-full overflow-hidden">
-                    <div class="bg-emerald-500 h-full animate-[radar-pulse_2s_infinite] w-full"></div>
+                    <div class="bg-emerald-500 h-full w-full"></div>
                 </div>
             </div>
             <button onclick="finishAdRecharge()" class="w-full py-2 bg-emerald-950/40 border border-emerald-700 text-emerald-400 font-black text-xs uppercase tracking-widest rounded-xl cursor-pointer">
@@ -104,23 +100,22 @@
             </button>
         </div>
 
-        <!-- MAIN SEEKER ACTIVE GRID INTERFACE -->
         <div id="screen-seeker" class="w-full flex flex-col space-y-4">
             <div class="w-full h-36 bg-zinc-900/20 border border-zinc-900 rounded-2xl relative overflow-hidden flex items-center justify-center">
                 <div class="absolute inset-0 bg-[radial-gradient(#164e63_1px,transparent_1px)] [background-size:16px_16px] opacity-30"></div>
                 <div class="absolute w-20 h-20 border border-cyan-500/20 rounded-full radar-ring"></div>
                 <div class="absolute transform translate-x-4 -translate-y-2 flex flex-col items-center">
                     <span class="h-2.5 w-2.5 bg-cyan-500 rounded-full border border-black animate-pulse shadow-[0_0_10px_#06b6d4]"></span>
-                    <span id="node-tag" class="text-[8px] bg-zinc-950 border border-zinc-800 text-zinc-400 px-1 py-0.5 rounded mt-1 font-black">FREE_NODE</span>
+                    <span id="node-tag" class="text-[8px] bg-zinc-950 border border-zinc-800 text-zinc-400 px-1 py-0.5 rounded mt-1 font-black">FETCHING...</span>
                 </div>
             </div>
 
             <div class="bg-zinc-900/50 border border-zinc-900 rounded-xl p-4 space-y-3">
-                <span class="text-[9px] text-amber-500 font-black tracking-wider uppercase block glow-amber">📡 TARGET AREA LOCATOR FEED</span>
+                <span class="text-[9px] text-amber-500 font-black tracking-wider uppercase block glow-amber">📡 TARGET AREA LOCATOR FEED (LIVE CLOUD)</span>
                 <div class="space-y-2 text-xs">
                     <div>
                         <span class="text-[10px] text-zinc-500 block uppercase tracking-wide">Physical Landmark Coordinate:</span>
-                        <strong id="display-location" class="text-zinc-200 font-sans block text-[13px] mt-0.5">---</strong>
+                        <strong id="display-location" class="text-zinc-200 font-sans block text-[13px] mt-0.5">Connecting to grid telemetry...</strong>
                     </div>
                     <div class="pt-1.5 border-t border-zinc-950/40">
                         <span class="text-[10px] text-zinc-500 block uppercase tracking-wide">Expected Vault Security Item:</span>
@@ -144,7 +139,6 @@
             </div>
         </div>
 
-        <!-- DROP VERIFICATION INTERACTION PANEL -->
         <div id="screen-exchange" class="w-full hidden flex flex-col space-y-4">
             <div class="bg-zinc-900/60 border border-zinc-900 rounded-xl p-4 space-y-4">
                 <div class="space-y-1.5">
@@ -162,7 +156,6 @@
             </div>
         </div>
 
-        <!-- SUCCESS PROTOCOL DISPLAY SCREEN -->
         <div id="screen-success" class="w-full hidden flex flex-col items-center text-center space-y-4">
             <div class="h-12 w-12 rounded-full border border-emerald-900 bg-emerald-950/20 flex items-center justify-center text-emerald-400 text-lg font-black">✓</div>
             <h2 class="text-xs uppercase tracking-[0.2em] text-emerald-400 font-black">Swap Cleared & Locked In</h2>
@@ -181,20 +174,31 @@
     </footer>
 
     <script>
-        const DEV_TOKEN = "DEV-MASTER-2026";
+        // ⚠️ PASTE YOUR SECURE SUPABASE CREDENTIALS HERE
+        const SUPABASE_URL = "https://djwpuzswnbkivckayhwp.supabase.co/rest/v1/";
+        const SUPABASE_ANON_KEY = "sb_publishable_R32nDh1HNSJWRTm81iVT4A_ywd6bpgT";
         
-        let dropNodesDatabase = [
-            { id: "NODE_01", location: "Under the middle green metal bench on the north side of the campus square park.", currentObject: "A shiny brass padlock", tier: "FREE" },
-            { id: "NODE_02", location: "Tucked inside the deep hollow tree knot of the giant old oak tree facing the library gate.", currentObject: "A small silver toy key", tier: "FREE" },
-            { id: "NODE_03", location: "[HIGH LEVEL MATRIX] Behind the third stone pillar at the back balcony of the central art atrium.", currentObject: "A golden antique gear token", tier: "PREMIUM" }
-        ];
+        const DEV_TOKEN = "DEV-MASTER-2026";
+        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+        let dropNodesDatabase = [];
         let playerState = { isPremium: false, energy: 2, adRevenueAccrued: 0.00 };
         let activeNodeIndex = 0;
 
-        window.onload = function() { loadSynchronizedNodeState(); };
+        window.onload = function() { fetchLiveGridData(); };
+
+        async function fetchLiveGridData() {
+            let { data, error } = await supabase.from('active_nodes').select('*').order('id', { ascending: true });
+            if (error) {
+                console.error("Cloud Synch Error:", error);
+                return;
+            }
+            dropNodesDatabase = data;
+            loadSynchronizedNodeState();
+        }
 
         function loadSynchronizedNodeState() {
+            if (dropNodesDatabase.length === 0) return;
             const currentNode = dropNodesDatabase[activeNodeIndex];
             
             if (currentNode.tier === "PREMIUM" && !playerState.isPremium) {
@@ -205,15 +209,15 @@
                 return;
             }
 
-            document.getElementById('display-location').textContent = currentNode.location;
-            document.getElementById('display-target-object').textContent = currentNode.currentObject;
+            document.getElementById('display-location').textContent = currentNode.location_hint;
+            document.getElementById('display-target-object').textContent = currentNode.current_object;
             document.getElementById('node-tag').textContent = `${currentNode.tier}_NODE`;
             document.getElementById('node-tag').className = "text-[8px] bg-zinc-900 border border-zinc-800 text-zinc-400 px-1 py-0.5 rounded mt-1 font-black";
         }
 
         function transitionToExchangeScreen() {
             if (playerState.energy <= 0 && !playerState.isPremium) {
-                alert("LOW CELLS: You have run out of grid operational energy. Watch an ad block or acquire Premium tier access to override the daily timer constraints!");
+                alert("LOW CELLS: You have run out of grid operational energy. Watch an ad block or acquire Premium tier access!");
                 return;
             }
             document.getElementById('screen-seeker').classList.add('hidden');
@@ -225,7 +229,7 @@
             document.getElementById('screen-seeker').classList.remove('hidden');
         }
 
-        function executeVerificationProtocol() {
+        async function executeVerificationProtocol() {
             const takenInput = document.getElementById('input-verify-taken').value.trim();
             const leftInput = document.getElementById('input-register-left').value.trim();
 
@@ -241,8 +245,19 @@
             }
 
             const currentNode = dropNodesDatabase[activeNodeIndex];
-            if (takenInput.toLowerCase() !== currentNode.currentObject.toLowerCase()) {
+            if (takenInput.toLowerCase() !== currentNode.current_object.toLowerCase()) {
                 document.getElementById('ban-screen').classList.remove('hidden');
+                return;
+            }
+
+            // Update the central Supabase Cloud database instantly
+            const { error } = await supabase
+                .from('active_nodes')
+                .update({ current_object: leftInput })
+                .eq('node_id', currentNode.node_id);
+
+            if (error) {
+                alert("Database Uplink Failure: " + error.message);
                 return;
             }
 
@@ -254,9 +269,6 @@
             document.getElementById('log-taken').textContent = takenInput;
             document.getElementById('log-left').textContent = leftInput;
 
-            currentNode.currentObject = leftInput;
-            activeNodeIndex = (activeNodeIndex + 1) % dropNodesDatabase.length;
-
             document.getElementById('screen-exchange').classList.add('hidden');
             document.getElementById('screen-success').classList.remove('hidden');
         }
@@ -266,7 +278,10 @@
             document.getElementById('input-register-left').value = "";
             document.getElementById('screen-success').classList.add('hidden');
             document.getElementById('screen-seeker').classList.remove('hidden');
-            loadSynchronizedNodeState();
+            
+            // Cycle target pointers and reload from cloud
+            activeNodeIndex = (activeNodeIndex + 1) % dropNodesDatabase.length;
+            fetchLiveGridData();
         }
 
         function triggerAdNetworkRecharge() {
@@ -281,7 +296,7 @@
 
             document.getElementById('screen-ad-player').classList.add('hidden');
             document.getElementById('screen-seeker').classList.remove('hidden');
-            alert("CAPACITOR LINK UP: +1 Energy system cell credited. $0.15 added to system developer terminal.");
+            alert("CAPACITOR LINK UP: +1 Energy system cell credited.");
         }
 
         function upgradeToPremiumAccount() {
@@ -291,26 +306,29 @@
             document.getElementById('energy-badge').innerHTML = "ENERGY: <span class='text-amber-400 font-bold'>UNLIMITED ∞</span>";
             document.getElementById('premium-buy-btn').textContent = "💎 LICENSED OPERATIVE";
             document.getElementById('premium-buy-btn').disabled = true;
-            alert("TRANSACTION CLEAR: Premium encryption parameters lifted. Unlimited operations authorized.");
+            alert("TRANSACTION CLEAR: Premium encryption parameters lifted.");
             loadSynchronizedNodeState();
         }
 
-        function launchDevTerminal() {
+        async function launchDevTerminal() {
             document.getElementById('dev-screen').classList.remove('hidden');
             document.getElementById('dev-ad-rev').textContent = `$${playerState.adRevenueAccrued.toFixed(2)}`;
             document.getElementById('dev-sub-count').textContent = playerState.isPremium ? "1" : "0";
             
+            // Fetch super fresh data for master console view
+            let { data } = await supabase.from('active_nodes').select('*').order('id', { ascending: true });
+            
             const tbody = document.getElementById('dev-table-body');
             tbody.innerHTML = "";
-            dropNodesDatabase.forEach(node => {
+            data.forEach(node => {
                 const tr = document.createElement('tr');
                 tr.className = "border-b border-zinc-900";
-                tr.innerHTML = `<td class='p-3 text-purple-400 font-bold'>${node.id}</td><td class='p-3 text-zinc-400 text-xs'>${node.location}</td><td class='p-3 text-cyan-400 font-bold'>${node.currentObject}</td><td class='p-3 font-bold text-[10px] text-zinc-500'>${node.tier}</td>`;
+                tr.innerHTML = `<td class='p-3 text-purple-400 font-bold'>${node.node_id}</td><td class='p-3 text-zinc-400 text-xs'>${node.location_hint}</td><td class='p-3 text-cyan-400 font-bold'>${node.current_object}</td><td class='p-3 font-bold text-[10px] text-zinc-500'>${node.tier}</td>`;
                 tbody.appendChild(tr);
             });
         }
 
-        function exitDevTerminal() { document.getElementById('dev-screen').classList.add('hidden'); loadSynchronizedNodeState(); }
+        function exitDevTerminal() { document.getElementById('dev-screen').classList.add('hidden'); fetchLiveGridData(); }
     </script>
 </body>
 </html>
