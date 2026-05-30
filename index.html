@@ -1,347 +1,43 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ANCHOR NET // OPERATIVE GRID</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <style>
-        @keyframes radar-pulse {
-            0% { transform: scale(0.95); opacity: 0.5; }
-            50% { opacity: 0.2; }
-            100% { transform: scale(1.6); opacity: 0; }
-        }
-        .radar-ring { animation: radar-pulse 3s infinite cubic-bezier(0.215, 0.610, 0.355, 1); }
-        .crt-scanlines {
-            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
-            background-size: 100% 4px, 6px 100%;
-        }
-        .glow-cyan { text-shadow: 0 0 10px #06b6d4, 0 0 20px #0891b2; }
-        .glow-amber { text-shadow: 0 0 10px #f59e0b; }
-        .glow-purple { text-shadow: 0 0 10px #c084fc, 0 0 20px #a855f7; }
-    </style>
 </head>
-<body class="bg-zinc-950 text-cyan-500 min-h-screen flex flex-col justify-between p-4 font-mono select-none crt-scanlines relative">
-
-    <div id="ban-screen" class="fixed inset-0 bg-black z-50 hidden flex flex-col items-center justify-center p-6 text-center space-y-6">
-        <div class="w-20 h-20 border border-red-900 bg-red-950/20 rounded-full flex items-center justify-center animate-pulse shadow-[0_0_25px_rgba(239,68,68,0.4)]">
-            <span class="text-red-500 text-3xl font-black">⚠️</span>
-        </div>
-        <div class="space-y-2 max-w-sm">
-            <h1 class="text-red-500 text-sm font-black tracking-[0.3em] uppercase">GRID BAN: ACCESS REVOKED</h1>
-            <p class="text-xs text-zinc-500 font-sans leading-relaxed">Your account signature has been permanently blacklisted for providing false verification telemetry.</p>
-        </div>
+<body class="bg-zinc-950 text-white p-6">
+    <h1 id="status" class="text-xl">Initializing Grid...</h1>
+    <div id="game-ui" class="mt-4 p-4 border border-zinc-700 rounded">
+        <p id="data-display">Connecting...</p>
     </div>
-
-    <div id="dev-screen" class="fixed inset-0 bg-zinc-950 z-40 hidden flex flex-col p-4 overflow-y-auto border-4 border-purple-900/50">
-        <div class="flex justify-between items-center border-b border-purple-900 pb-3 mb-4">
-            <div class="flex items-center gap-2">
-                <span class="h-2 w-2 rounded-full bg-purple-500 animate-pulse"></span>
-                <span class="text-xs font-black uppercase tracking-[0.3em] text-purple-400 glow-purple">DEV BACKEND MANAGEMENT PANEL</span>
-            </div>
-            <button onclick="exitDevTerminal()" class="text-[9px] bg-purple-950 border border-purple-700 text-purple-300 px-3 py-1 rounded font-bold uppercase hover:bg-purple-900 cursor-pointer">Exit Matrix</button>
-        </div>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-            <div class="bg-zinc-900/80 border border-zinc-800 p-3 rounded-xl">
-                <span class="text-[9px] text-zinc-500 block font-bold uppercase">System Ad Revenue Accumulation</span>
-                <span class="text-xl font-black text-emerald-400" id="dev-ad-rev">$0.00</span>
-            </div>
-            <div class="bg-zinc-900/80 border border-zinc-800 p-3 rounded-xl">
-                <span class="text-[9px] text-zinc-500 block font-bold uppercase">Premium Licenses Sold</span>
-                <span class="text-xl font-black text-amber-500" id="dev-sub-count">0</span>
-            </div>
-        </div>
-        <div class="space-y-2">
-            <span class="text-[10px] text-purple-400 font-black tracking-wider uppercase block">• GLOBAL ACTIVE ANCHOR MAP DATA (LIVE DATABASE)</span>
-            <div class="bg-zinc-900/50 border border-zinc-800 rounded-xl overflow-x-auto">
-                <table class="w-full text-[11px] text-left border-collapse font-sans">
-                    <thead>
-                        <tr class="border-b border-zinc-800 font-mono text-[9px] text-zinc-500 uppercase bg-zinc-950/60">
-                            <th class="p-3">Node ID</th>
-                            <th class="p-3">Physical Location Landmark Hint</th>
-                            <th class="p-3">Current Hidden Target Item</th>
-                            <th class="p-3">Grid Tier Level</th>
-                        </tr>
-                    </thead>
-                    <tbody id="dev-table-body" class="text-zinc-300"></tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-
-    <header class="w-full max-w-md mx-auto flex justify-between items-center border-b border-zinc-900 pb-3 z-10">
-        <div class="flex items-center gap-2">
-            <span class="h-2 w-2 rounded-full bg-cyan-500 animate-ping"></span>
-            <span class="text-[10px] font-black uppercase tracking-[0.25em] glow-cyan">ANCHOR_NET // ACCESS_POINT</span>
-        </div>
-        <div class="flex items-center gap-2">
-            <div id="energy-badge" class="bg-zinc-900/80 border border-zinc-800 px-2 py-0.5 rounded text-[9px] font-bold text-emerald-400 tracking-wider">
-                ENERGY: <span id="energy-count">2</span>/2
-            </div>
-            <div id="tier-badge" class="bg-zinc-900/80 border border-zinc-800 px-2 py-0.5 rounded text-[9px] font-bold text-zinc-400 tracking-wider">
-                TIER: FREE
-            </div>
-        </div>
-    </header>
-
-    <main class="flex-grow flex flex-col justify-center items-center w-full max-w-md mx-auto my-4 z-10 relative">
-
-        <div id="screen-ad-player" class="w-full hidden bg-zinc-900/80 border-2 border-emerald-800 rounded-2xl p-6 text-center space-y-4">
-            <span class="text-[10px] text-emerald-400 font-black tracking-[0.3em] uppercase block">📺 CHARGING INTERNAL CAPACITORS</span>
-            <div class="w-full h-32 bg-black rounded-xl flex flex-col items-center justify-center p-4 border border-zinc-800">
-                <span class="text-xs text-zinc-500 font-sans mb-2">[LOADING REWARDED NET VIDEO SPONSOR]</span>
-                <div class="w-2/3 bg-zinc-900 h-2 rounded-full overflow-hidden">
-                    <div class="bg-emerald-500 h-full w-full"></div>
-                </div>
-            </div>
-            <button onclick="finishAdRecharge()" class="w-full py-2 bg-emerald-950/40 border border-emerald-700 text-emerald-400 font-black text-xs uppercase tracking-widest rounded-xl cursor-pointer">
-                Claim Free Energy Cell
-            </button>
-        </div>
-
-        <div id="screen-seeker" class="w-full flex flex-col space-y-4">
-            <div class="w-full h-36 bg-zinc-900/20 border border-zinc-900 rounded-2xl relative overflow-hidden flex items-center justify-center">
-                <div class="absolute inset-0 bg-[radial-gradient(#164e63_1px,transparent_1px)] [background-size:16px_16px] opacity-30"></div>
-                <div class="absolute w-20 h-20 border border-cyan-500/20 rounded-full radar-ring"></div>
-                <div class="absolute transform translate-x-4 -translate-y-2 flex flex-col items-center">
-                    <span class="h-2.5 w-2.5 bg-cyan-500 rounded-full border border-black animate-pulse shadow-[0_0_10px_#06b6d4]"></span>
-                    <span id="node-tag" class="text-[8px] bg-zinc-950 border border-zinc-800 text-zinc-400 px-1 py-0.5 rounded mt-1 font-black">FETCHING...</span>
-                </div>
-            </div>
-
-            <div class="bg-zinc-900/50 border border-zinc-900 rounded-xl p-4 space-y-3">
-                <span class="text-[9px] text-amber-500 font-black tracking-wider uppercase block glow-amber">📡 TARGET AREA LOCATOR FEED (LIVE CLOUD)</span>
-                <div class="space-y-2 text-xs">
-                    <div>
-                        <span class="text-[10px] text-zinc-500 block uppercase tracking-wide">Physical Landmark Coordinate:</span>
-                        <strong id="display-location" class="text-zinc-200 font-sans block text-[13px] mt-0.5">Connecting to grid telemetry...</strong>
-                    </div>
-                    <div class="pt-1.5 border-t border-zinc-950/40">
-                        <span class="text-[10px] text-zinc-500 block uppercase tracking-wide">Expected Vault Security Item:</span>
-                        <span id="display-target-object" class="text-cyan-400 font-black tracking-wide glow-cyan">---</span>
-                    </div>
-                </div>
-            </div>
-
-            <div class="space-y-2">
-                <button onclick="transitionToExchangeScreen()" class="w-full py-4 bg-cyan-950/20 hover:bg-cyan-950/40 border border-cyan-800 text-cyan-400 font-black uppercase tracking-[0.2em] rounded-xl text-xs cursor-pointer transition-all glow-cyan">
-                    [ OPEN SECURE EXCHANGE ]
-                </button>
-                <div class="grid grid-cols-2 gap-2">
-                    <button onclick="triggerAdNetworkRecharge()" class="py-2.5 bg-emerald-950/20 hover:bg-emerald-950/40 border border-emerald-900 text-emerald-400 font-bold uppercase tracking-wider rounded-xl text-[9px] cursor-pointer">
-                        📺 Watch Video Ad (+1 Energy)
-                    </button>
-                    <button onclick="upgradeToPremiumAccount()" id="premium-buy-btn" class="py-2.5 bg-amber-950/30 hover:bg-amber-950/50 border border-amber-800 text-amber-400 font-black uppercase tracking-wider rounded-xl text-[9px] cursor-pointer glow-amber">
-                        💎 Premium Access ($4.99)
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <div id="screen-exchange" class="w-full hidden flex flex-col space-y-4">
-            <div class="bg-zinc-900/60 border border-zinc-900 rounded-xl p-4 space-y-4">
-                <div class="space-y-1.5">
-                    <label class="text-[9px] text-zinc-400 uppercase tracking-wider font-black block">1. Extraction Verification</label>
-                    <input id="input-verify-taken" type="text" placeholder="Type the EXACT object you found inside the hiding spot..." class="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2.5 text-xs text-zinc-200 font-sans focus:outline-none focus:border-cyan-700">
-                </div>
-                <div class="space-y-1.5 pt-3 border-t border-zinc-950">
-                    <label class="text-[9px] text-zinc-400 uppercase tracking-wider font-black block">2. New Drop-Off Registration</label>
-                    <input id="input-register-left" type="text" placeholder="What specific new object are you leaving behind?" class="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2.5 text-xs text-zinc-200 font-sans focus:outline-none focus:border-cyan-700">
-                </div>
-            </div>
-            <div class="flex gap-2">
-                <button onclick="cancelExchangeScreen()" class="w-1/3 py-3.5 bg-zinc-900 border border-zinc-800 text-zinc-400 text-xs uppercase font-bold rounded-xl cursor-pointer">Abort</button>
-                <button onclick="executeVerificationProtocol()" class="w-2/3 py-3.5 bg-emerald-950/20 border border-emerald-800 text-emerald-400 font-black text-xs uppercase tracking-wider rounded-xl cursor-pointer">Transmit Swap</button>
-            </div>
-        </div>
-
-        <div id="screen-success" class="w-full hidden flex flex-col items-center text-center space-y-4">
-            <div class="h-12 w-12 rounded-full border border-emerald-900 bg-emerald-950/20 flex items-center justify-center text-emerald-400 text-lg font-black">✓</div>
-            <h2 class="text-xs uppercase tracking-[0.2em] text-emerald-400 font-black">Swap Cleared & Locked In</h2>
-            <div class="w-full bg-zinc-900/60 border border-zinc-900 rounded-xl p-3.5 text-left text-[11px] space-y-1 text-zinc-400">
-                <div>• Asset Logged Out: <span id="log-taken" class="text-zinc-200 font-sans"></span></div>
-                <div>• Asset Planted In: <span id="log-left" class="text-zinc-200 font-sans"></span></div>
-            </div>
-            <button onclick="returnToMainMapHub()" class="w-full py-4 bg-zinc-900 border border-zinc-800 text-zinc-300 font-bold uppercase tracking-wider rounded-xl text-xs cursor-pointer">
-                Scan Next Grid Sector
-            </button>
-        </div>
-    </main>
-
-    <footer class="w-full max-w-md mx-auto text-center text-[8px] text-zinc-700 font-bold uppercase tracking-[0.2em] border-t border-zinc-900 pt-2.5">
-        DECENTRALIZED LOCATION SYSTEM NET // ENCRYPTED ENDPOINT
-    </footer>
 
     <script>
-        // ⚠️ PASTE YOUR SECURE SUPABASE CREDENTIALS HERE
-        const SUPABASE_URL = "https://djwpuzswnbkivckayhwp.supabase.co/rest/v1/";
+        // --- PASTE YOUR KEYS HERE ---
+        const SUPABASE_URL = "https://djwpuzswnbkivckayhwp.supabase.co/rest/v1/"; 
         const SUPABASE_ANON_KEY = "sb_publishable_R32nDh1HNSJWRTm81iVT4A_ywd6bpgT";
-        
-        const DEV_TOKEN = "DEV-MASTER-2026";
+        // ----------------------------
+
         const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        const statusEl = document.getElementById('status');
+        const dataEl = document.getElementById('data-display');
 
-        let dropNodesDatabase = [];
-        let playerState = { isPremium: false, energy: 2, adRevenueAccrued: 0.00 };
-        let activeNodeIndex = 0;
-
-        window.onload = function() { fetchLiveGridData(); };
-
-        async function fetchLiveGridData() {
-    console.log("Attempting to connect to:", SUPABASE_URL);
-    try {
-        let { data, error } = await supabase.from('active_nodes').select('*').order('id', { ascending: true });
-        
-        if (error) {
-            document.getElementById('display-location').textContent = "ERROR: " + error.message;
-            return;
-        }
-        
-        if (!data || data.length === 0) {
-            document.getElementById('display-location').textContent = "Database is empty. Add data in SQL Editor!";
-            return;
-        }
-
-        dropNodesDatabase = data;
-        loadSynchronizedNodeState();
-    } catch (err) {
-        document.getElementById('display-location').textContent = "CRITICAL ERROR: Could not connect to database.";
-    }
-}
-
-
-        function loadSynchronizedNodeState() {
-            if (dropNodesDatabase.length === 0) return;
-            const currentNode = dropNodesDatabase[activeNodeIndex];
-            
-            if (currentNode.tier === "PREMIUM" && !playerState.isPremium) {
-                document.getElementById('display-location').innerHTML = "<span class='text-amber-500 font-bold'>[SECURITY ERROR]:</span> This high-tier cluster location demands a <strong>Premium License Key</strong> level footprint.";
-                document.getElementById('display-target-object').textContent = "⚠️ METADATA LOCKED";
-                document.getElementById('node-tag').textContent = "PREMIUM_LOCKED";
-                document.getElementById('node-tag').className = "text-[8px] bg-amber-950 border border-amber-800 text-amber-400 px-1 py-0.5 rounded mt-1 font-black";
-                return;
+        async function connect() {
+            try {
+                statusEl.textContent = "Fetching Data...";
+                let { data, error } = await supabase.from('active_nodes').select('*');
+                
+                if (error) throw error;
+                if (!data || data.length === 0) {
+                    dataEl.textContent = "Database is connected but empty.";
+                } else {
+                    dataEl.textContent = "Data Loaded! Found " + data.length + " nodes.";
+                    console.log(data);
+                }
+            } catch (err) {
+                statusEl.textContent = "CONNECTION ERROR";
+                dataEl.textContent = err.message;
             }
-
-            document.getElementById('display-location').textContent = currentNode.location_hint;
-            document.getElementById('display-target-object').textContent = currentNode.current_object;
-            document.getElementById('node-tag').textContent = `${currentNode.tier}_NODE`;
-            document.getElementById('node-tag').className = "text-[8px] bg-zinc-900 border border-zinc-800 text-zinc-400 px-1 py-0.5 rounded mt-1 font-black";
         }
-
-        function transitionToExchangeScreen() {
-            if (playerState.energy <= 0 && !playerState.isPremium) {
-                alert("LOW CELLS: You have run out of grid operational energy. Watch an ad block or acquire Premium tier access!");
-                return;
-            }
-            document.getElementById('screen-seeker').classList.add('hidden');
-            document.getElementById('screen-exchange').classList.remove('hidden');
-        }
-
-        function cancelExchangeScreen() {
-            document.getElementById('screen-exchange').classList.add('hidden');
-            document.getElementById('screen-seeker').classList.remove('hidden');
-        }
-
-        async function executeVerificationProtocol() {
-            const takenInput = document.getElementById('input-verify-taken').value.trim();
-            const leftInput = document.getElementById('input-register-left').value.trim();
-
-            if (takenInput === DEV_TOKEN || leftInput === DEV_TOKEN) {
-                launchDevTerminal();
-                cancelExchangeScreen();
-                return;
-            }
-
-            if (!takenInput || !leftInput) {
-                alert("INPUT REJECTED: All coordinate telemetry inputs must be completed.");
-                return;
-            }
-
-            const currentNode = dropNodesDatabase[activeNodeIndex];
-            if (takenInput.toLowerCase() !== currentNode.current_object.toLowerCase()) {
-                document.getElementById('ban-screen').classList.remove('hidden');
-                return;
-            }
-
-            // Update the central Supabase Cloud database instantly
-            const { error } = await supabase
-                .from('active_nodes')
-                .update({ current_object: leftInput })
-                .eq('node_id', currentNode.node_id);
-
-            if (error) {
-                alert("Database Uplink Failure: " + error.message);
-                return;
-            }
-
-            if (!playerState.isPremium) {
-                playerState.energy--;
-                document.getElementById('energy-count').textContent = playerState.energy;
-            }
-
-            document.getElementById('log-taken').textContent = takenInput;
-            document.getElementById('log-left').textContent = leftInput;
-
-            document.getElementById('screen-exchange').classList.add('hidden');
-            document.getElementById('screen-success').classList.remove('hidden');
-        }
-
-        function returnToMainMapHub() {
-            document.getElementById('input-verify-taken').value = "";
-            document.getElementById('input-register-left').value = "";
-            document.getElementById('screen-success').classList.add('hidden');
-            document.getElementById('screen-seeker').classList.remove('hidden');
-            
-            // Cycle target pointers and reload from cloud
-            activeNodeIndex = (activeNodeIndex + 1) % dropNodesDatabase.length;
-            fetchLiveGridData();
-        }
-
-        function triggerAdNetworkRecharge() {
-            document.getElementById('screen-seeker').classList.add('hidden');
-            document.getElementById('screen-ad-player').classList.remove('hidden');
-        }
-
-        function finishAdRecharge() {
-            playerState.energy = Math.min(playerState.energy + 1, 2);
-            document.getElementById('energy-count').textContent = playerState.energy;
-            playerState.adRevenueAccrued += 0.15; 
-
-            document.getElementById('screen-ad-player').classList.add('hidden');
-            document.getElementById('screen-seeker').classList.remove('hidden');
-            alert("CAPACITOR LINK UP: +1 Energy system cell credited.");
-        }
-
-        function upgradeToPremiumAccount() {
-            playerState.isPremium = true;
-            document.getElementById('tier-badge').textContent = "TIER: PREMIUM";
-            document.getElementById('tier-badge').className = "bg-amber-950/80 border border-amber-800 px-2 py-0.5 rounded text-[9px] font-bold text-amber-400 tracking-wider glow-amber";
-            document.getElementById('energy-badge').innerHTML = "ENERGY: <span class='text-amber-400 font-bold'>UNLIMITED ∞</span>";
-            document.getElementById('premium-buy-btn').textContent = "💎 LICENSED OPERATIVE";
-            document.getElementById('premium-buy-btn').disabled = true;
-            alert("TRANSACTION CLEAR: Premium encryption parameters lifted.");
-            loadSynchronizedNodeState();
-        }
-
-        async function launchDevTerminal() {
-            document.getElementById('dev-screen').classList.remove('hidden');
-            document.getElementById('dev-ad-rev').textContent = `$${playerState.adRevenueAccrued.toFixed(2)}`;
-            document.getElementById('dev-sub-count').textContent = playerState.isPremium ? "1" : "0";
-            
-            // Fetch super fresh data for master console view
-            let { data } = await supabase.from('active_nodes').select('*').order('id', { ascending: true });
-            
-            const tbody = document.getElementById('dev-table-body');
-            tbody.innerHTML = "";
-            data.forEach(node => {
-                const tr = document.createElement('tr');
-                tr.className = "border-b border-zinc-900";
-                tr.innerHTML = `<td class='p-3 text-purple-400 font-bold'>${node.node_id}</td><td class='p-3 text-zinc-400 text-xs'>${node.location_hint}</td><td class='p-3 text-cyan-400 font-bold'>${node.current_object}</td><td class='p-3 font-bold text-[10px] text-zinc-500'>${node.tier}</td>`;
-                tbody.appendChild(tr);
-            });
-        }
-
-        function exitDevTerminal() { document.getElementById('dev-screen').classList.add('hidden'); fetchLiveGridData(); }
+        connect();
     </script>
 </body>
 </html>
