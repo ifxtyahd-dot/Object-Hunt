@@ -188,14 +188,27 @@
         window.onload = function() { fetchLiveGridData(); };
 
         async function fetchLiveGridData() {
-            let { data, error } = await supabase.from('active_nodes').select('*').order('id', { ascending: true });
-            if (error) {
-                console.error("Cloud Synch Error:", error);
-                return;
-            }
-            dropNodesDatabase = data;
-            loadSynchronizedNodeState();
+    console.log("Attempting to connect to:", SUPABASE_URL);
+    try {
+        let { data, error } = await supabase.from('active_nodes').select('*').order('id', { ascending: true });
+        
+        if (error) {
+            document.getElementById('display-location').textContent = "ERROR: " + error.message;
+            return;
         }
+        
+        if (!data || data.length === 0) {
+            document.getElementById('display-location').textContent = "Database is empty. Add data in SQL Editor!";
+            return;
+        }
+
+        dropNodesDatabase = data;
+        loadSynchronizedNodeState();
+    } catch (err) {
+        document.getElementById('display-location').textContent = "CRITICAL ERROR: Could not connect to database.";
+    }
+}
+
 
         function loadSynchronizedNodeState() {
             if (dropNodesDatabase.length === 0) return;
